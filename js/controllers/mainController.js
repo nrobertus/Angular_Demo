@@ -1,45 +1,69 @@
-app.controller('mainController', ['$scope', function($scope){
-  $scope.title = 'Angular Test App';
-  $scope.promo = 'For the edification and frustration of developers everywhere';
-  $scope.products = 
-    [
-    { 
-        name: 'The Book of Trees', 
-        price: 19, 
-        pubdate: new Date('2014', '03', '08'), 
-        cover: 'img/the-book-of-trees.jpg',
-        likes:0,
-        dislikes:0
-      }, 
-      { 
-        name: 'Program or be Programmed', 
-        price: 8, 
-        pubdate: new Date('2013', '08', '01'), 
-        cover: 'img/program-or-be-programmed.jpg' ,
-        likes:0,
-        dislikes:0
-      },
-    { 
-        name: 'Twenty One Balloons', 
-        price: 11, 
-        pubdate: new Date('1972', '08', '01'), 
-        cover: 'img/program-or-be-programmed.jpg' ,
-        likes:0,
-        dislikes:0
-      },
-    { 
-        name: 'A Tale of Two Cities', 
-        price: 22, 
-        pubdate: new Date('1859', '08', '01'), 
-        cover: 'img/program-or-be-programmed.jpg' ,
-        likes:0,
-        dislikes:0
+app.controller('mainController', function($scope, $http){
+  var current = '';
+  $scope.city = 'Bozeman, MT';
+  $scope.forecast = [];
+  $scope.getWeather = function() {
+
+      var responsePromise = $http.get("http://api.openweathermap.org/data/2.5/weather?q=" + $scope.city);
+
+      responsePromise.success(function(data, status, headers, config) {
+          $scope.current = {humidity:data.main.humidity, pressure:data.main.pressure, temp:((data.main.temp - 273.15)* 1.8000)+32.00, description:data.weather[0].description};
+      });
+      responsePromise.error(function(data, status, headers, config) {
+          alert("AJAX failed!");
+      });
+  };
+  $scope.getForecast = function() {
+
+      var responsePromise = $http.get("http://api.openweathermap.org/data/2.5/forecast?q=" + $scope.city);
+
+      responsePromise.success(function(data, status, headers, config) {
+        console.log(data);
+        for(var i = 0; i<data.list.length; i++){
+          var date_data = data.list[i];
+          var newDate = {date:date_data.dt_txt, humidity:date_data.main.humidity, pressure:date_data.main.pressure, temp:((date_data.main.temp - 273.15)* 1.8000)+32.00, description:date_data.weather[0].description};
+          $scope.forecast.push(newDate);
+        }
+          //$scope.forecast = {humidity:data.main.humidity, pressure:data.main.pressure, temp:((data.main.temp - 273.15)* 1.8000)+32.00, description:data.weather[0].description};
+      });
+      responsePromise.error(function(data, status, headers, config) {
+          alert("AJAX failed!");
+      });
+  };
+
+
+
+var geocoder;
+
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(successFunction, errorFunction);
+  } 
+  //Get the latitude and the longitude;
+  function successFunction(position) {
+      var lat = position.coords.latitude;
+      var lng = position.coords.longitude;
+      codeLatLng(lat, lng)
+  }
+
+  function errorFunction(){
+      alert("Geocoder failed");
+  }
+  function initialize() {
+    geocoder = new google.maps.Geocoder();
+  }
+
+  function codeLatLng(lat, lng) {
+    var latlng = new google.maps.LatLng(lat, lng);
+    geocoder.geocode({'latLng': latlng}, function(results, status) {
+      if (status == google.maps.GeocoderStatus.OK) {
+      console.log(results);
+      $scope.location = results
+      } else {
+        alert("Geocoder failed due to: " + status);
       }
-    ]
-  $scope.plusOne = function(index){
-    $scope.products[index].likes += 1;
+    });
   }
-  $scope.minusOne = function(index){
-    $scope.products[index].dislikes += 1;
-  }
-}]);
+  $scope.getWeather();
+  $scope.getForecast();
+  initialize();
+});
