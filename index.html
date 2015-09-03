@@ -11,22 +11,20 @@
 <body ng-app = "myApp"></body>
 
 <div ng-controller="mainController">
-	<h1>{{city}} weather</h1>
+	<h1>{{city}}</h1>
 
 	<p>Humidity: {{current.humidity}}%</p>
 	<p>Pressure: {{current.pressure}}</p>
-	<p>Temp: {{current.temp}}&deg;F</p>
+	<p>Temp: {{current.temp | limitTo: 2}}&deg;F</p>
 	<p>Description: {{current.description}}</p>
-	<div ng-repeat="result in location">
-		<p>{{result.formatted_address}}</p>
-	</div>
-	<div ng-repeat="entry in forecast">
+	{{location}}
+	<div ng-repeat="day in forecast">
 		<br/>
-		<p>Date: {{entry.date}}</p>
-		<p>Humidity: {{entry.humidity}}%</p>
-		<p>Pressure: {{entry.pressure}}</p>
-		<p>Temp: {{entry.temp}}&deg;F</p>
-		<p>Description: {{entry.description}}</p>
+		<p><strong>Date: {{day.day}}</strong></p>
+		<p>Humidity: {{day.trends.humid_avg | limitTo: 4}}%</p>
+		<p>Wind: {{day.trends.wind_avg | limitTo:4}} mph </p>
+		<p>High: {{day.trends.max_temp |limitTo:2}}&deg;F</p>
+		<p>Low: {{day.trends.min_temp |limitTo:2}}&deg;F</p>
 	</div>
 </div>
 
